@@ -1,0 +1,41 @@
+(AXIS_SESSION_CAPSULE
+
+  (phase "FIX_FORWARD_REFACTOR_PHASE_1")
+
+  (active_modules
+    "core/bounded_repair.py"
+    "core/file_transaction.py"
+    "core/test_executor.py"
+    "core/git_archiver.py"
+    "core/l4_5.py")
+
+  (architectural_intent
+    "BoundedRepair must be pure orchestrator"
+    "Disk state isolated in FileTransaction"
+    "Test execution isolated in TestExecutor"
+    "Git archival only in GitArchiver"
+    "High-risk clarifications never auto-approved")
+
+  (invariants
+    "No behavior change during refactor"
+    "Public API unchanged"
+    "Forensic log markers unchanged"
+    "Never mutate PLAN"
+    "Never expand allowed_file scope"
+    "Git for archival only")
+
+  (current_known_failures
+    "TestExecutor quoting behavior"
+    "L4_5 recommend-all high risk inclusion")
+
+  (refactor_strategy
+    "Fix-forward"
+    "One module at a time"
+    "Tests must pass after each step"
+    "No big bang")
+
+  (do_not_touch
+    "AttemptResult schema"
+    "BoundedRepairResult schema"
+    "Ledger semantics"
+    "Planner invariants"))

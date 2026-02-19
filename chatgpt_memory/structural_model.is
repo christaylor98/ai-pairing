@@ -1,0 +1,105 @@
+(AXIS_STRUCTURAL_MODEL_V2
+
+  (core/bounded_repair.py
+    (role "Orchestrator for bounded mechanical repair")
+    (concern "Coordinates attempt loop. Does NOT own disk, git, or test logic after refactor.")
+    (invariants
+      "Never mutate PLAN"
+      "Never change allowed_file"
+      "Never modify multiple files"
+      "Git for archival only"
+      "Disk restore is mechanical"
+      "All attempts logged"
+      "Public API unchanged")
+    (depends_on
+      "core/file_transaction.py"
+      "core/test_executor.py"
+      "core/git_archiver.py"
+      "core/mechanical_validator.py"
+      "core/diff_normalizer.py")
+    (depended_on_by
+      "strategic_runner"
+      "engine"
+      "repair harness")
+    (fragility
+      "Git working directory handling"
+      "Baseline capture/restore semantics"
+      "Correct delegation ordering"
+      "Preserving forensic log markers")
+    (recent_changes
+      "Extracted disk logic to FileTransaction"
+      "Extracted pytest execution to TestExecutor"
+      "Extracted git logic to GitArchiver")
+    (do_not_touch
+      "AttemptResult schema"
+      "BoundedRepairResult schema"
+      "Log marker strings"
+      "Retry loop semantics"))
+
+
+  (core/file_transaction.py
+    (role "Pure disk state handler for allowed_file")
+    (concern "Apply diff/full update, restore baseline, verify SHA")
+    (invariants
+      "No git commands"
+      "Only touch allowed_file"
+      "Restore must be exact byte-level match"
+      "SHA verification strict")
+    (depends_on "patch subprocess only")
+    (fragility
+      "Correct diff vs full detection"
+      "Correct read path semantics"
+      "No cross-file writes")
+    (recent_changes
+      "read_current_text now supports explicit path to preserve semantics")
+    (blast_radius "If wrong: silent state drift or non-deterministic repair behavior"))
+
+
+  (core/test_executor.py
+    (role "Deterministic test runner abstraction")
+    (concern "Execute test_command and return (rc, combined_output)")
+    (invariants
+      "No file writes"
+      "No git"
+      "Return stdout+stderr exactly"
+      "Timeout enforced")
+    (fragility
+      "Quoted shell commands"
+      "Argument splitting"
+      "Avoid shell injection but preserve quoting semantics")
+    (current_failure
+      "python -c \"print('hi')\" returns empty output due to naive .split()")
+    (blast_radius
+      "Breaks repair pass/fail detection"
+      "Causes false-negative test success"))
+
+
+  (core/git_archiver.py
+    (role "Archival boundary")
+    (concern "Assert clean, add allowed_file, commit, return head SHA")
+    (invariants
+      "Must operate on correct repository"
+      "Must not read dirty state from outer repo"
+      "Only stage allowed_file"
+      "Clean after commit")
+    (fragility
+      "cwd handling"
+      "repo root detection")
+    (blast_radius
+      "False dirty detection"
+      "Commit in wrong repository"
+      "Cross-repo contamination"))
+
+
+  (core/l4_5.py
+    (role "Human-AI clarification layer")
+    (concern "Extract ambiguities, rank risk, parse loose human responses")
+    (invariants
+      "Risk floors respected"
+      "High risk never auto-approved"
+      "Deterministic ranking")
+    (current_failure
+      "_parse_loose_response('recommend all') incorrectly includes HIGH risk")
+    (blast_radius
+      "Governance breach — auto-approves high-risk clarifications"))
+)

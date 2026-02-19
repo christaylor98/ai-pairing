@@ -1,0 +1,115 @@
+(AXIS_SESSION_HANDOVER_V1
+  (repo
+    (name "poc-coding-workflow-2")
+    (root "/home/chris/dev/poc-coding-workflow-2")
+    (python "3.9.13")
+    (pytest "python -m pytest tests/ -v")
+    (recent_context
+      "We are fix-forward refactoring bounded_repair into small modules.
+       Copilot attempted extraction; introduced regressions; we are making tests green while preserving invariants."))
+
+  (objective
+    (id "FIX_FORWARD_REFACTOR_PHASE_1_BOUNDED_REPAIR_DECOMPOSE")
+    (goal
+      "Decompose core/bounded_repair.py into small single-concern modules with zero behavior change.
+       Keep public API unchanged. Keep forensic log markers unchanged. Git for archival only."))
+
+  (invariants
+    (no_behavior_change true)
+    (no_semantic_change true)
+    (keep_public_api_unchanged true)
+    (keep_logging_output_unchanged true)
+    (keep_forensic_markers_unchanged true)
+    (no_git_restore true)
+    (no_git_clean true)
+    (git_for_archival_only true)
+    (one_module_at_a_time true)
+    (always_runnable true)
+    (tests_after_each_extraction true))
+
+  (working_set_files
+    (core
+      (file "core/bounded_repair.py"
+        (role "Orchestrator for bounded repair attempts. Delegates disk ops/tests/git archival after refactor. Must preserve AttemptResult/BoundedRepairResult and forensic markers.")
+        (critical_note
+          "BoundedRepair currently constructs:
+           - FileTransaction(self.allowed_file, logger=self.logger)
+           - TestExecutor(self.test_command)
+           - GitArchiver(self.allowed_file)
+           and calls git_archiver.assert_clean() at start."))
+      (file "core/file_transaction.py"
+        (role "Disk-only, allowed-file-only state handling. Apply diff/full update, restore baseline, verify SHA.")
+        (critical_note
+          "A semantic fix was required: read_current_text must read from self.file_path, not allowed_file, because callers passed absolute file_path. Now signature supports optional path."))
+      (file "core/test_executor.py"
+        (role "Run test command deterministically; return (returncode, combined_output). No file writes. No git."))
+      (file "core/git_archiver.py"
+        (role "Git archival only: assert_clean, add+commit allowed_file, head_sha. Must operate on correct repo, not global cwd.")))
+    (tests
+      (file "tests/test_bounded_repair_smoke_contract.py"
+        (role "Smoke: bounded repair runs without crashing in a temp git repo. Uses coder_stub. test_command='true'."))
+      (file "tests/test_test_executor.py"
+        (role "Ensures TestExecutor captures stdout from quoted python -c command."))
+      (file "tests/test_git_archiver.py"
+        (role "Ensures GitArchiver works inside temp git repo and doesn’t read dirty status from the main repo."))))
+
+  (current_pytest_status
+    (last_run "python -m pytest tests/ -v")
+    (total "357")
+    (passed "355")
+    (failed "2")
+    (failures
+      (failure
+        (test "tests/test_l4_5.py::test_parse_loose_response_recommend_all")
+        (symptom
+          "_parse_loose_response('recommend all', items) returns mapping including HIGH risk item rank=1, but test expects HIGH risk NOT auto-accepted.")
+        (expected
+          "When response is 'recommend all': accept MEDIUM+LOW only; DO NOT auto-accept HIGH.")
+        (fix_target
+          "core/l4_5.py: _parse_loose_response (logic gate for 'recommend all')"))
+      (failure
+        (test "tests/test_test_executor.py::test_run_simple_command")
+        (symptom
+          "TestExecutor returns rc==0 but output is empty; expected 'hi' in output for: python -c \"print('hi')\"")
+        (expected
+          "TestExecutor must preserve quoting properly; must capture stdout reliably.")
+        (fix_target
+          "core/test_executor.py"))))
+
+  (recent_regressions_we_already_fixed
+    (fixed
+      (item
+        (file "core/bounded_repair.py + core/file_transaction.py")
+        (change
+          "FileTransaction.read_current_text changed to accept optional path;
+           bounded_repair calls read_current_text(self.file_path) to preserve semantics.")))
+    (rolled_back_or_in-progress
+      (item
+        (file "core/git_archiver.py")
+        (change
+          "Copilot added cwd logic incorrectly; then you reverted it.
+           Current GitArchiver still runs git commands with NO cwd,
+           so in tests it reads dirty status from the main repo instead of tmp repo.
+           This was causing failures earlier but now those failures are gone;
+           remaining failures are only l4_5 + test_executor."))))
+
+  (git_archiver_drop_in_replacement_requested
+    (note
+      "User asked: 'give orig file, you give me drop in replacement'.
+       Goal: GitArchiver must run commands in the repo that contains allowed_file.
+       Mechanism: discover repo root using `git -C <dir-of-allowed_file> rev-parse --show-toplevel`
+       and then run subsequent commands with cwd=repo_root or git -C repo_root.
+       Must be robust, minimal, no extra features."))
+
+  (known_tooling_pitfall
+    (patch_application
+      "User tried: `git apply -` but patch included invalid `index ... FIXME` and/or lacked full headers; resulted in 'corrupt patch'.
+       Preferred local method: `applypatch-msg` (not available) OR use `git apply <file.patch>`.
+       If generating diffs: ensure proper unified diff format with correct `diff --git` headers and no placeholder hashes."))
+
+  (next_actions_strict
+    (priority_order
+      (1 "Fix core/test_executor.py so quoted command works and output captured (no shell=True unless explicitly allowed).")
+      (2 "Fix core/l4_5.py _parse_loose_response so 'recommend all' excludes HIGH risk.")
+      (3 "Re-run pytest; stop if green."))
+)

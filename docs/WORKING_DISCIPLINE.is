@@ -1,0 +1,150 @@
+(identity
+  (artifact "WORKING_DISCIPLINE")
+  (version "1.0")
+  (purpose "deterministic multi-session mechanical development protocol")
+)
+
+(core_principles
+  (mechanical_over_creative true)
+  (zero_behavior_change_by_default true)
+  (one_module_at_a_time true)
+  (append_only_ledger true)
+  (no_hidden_state true)
+  (no_semantic_drift true)
+  (facts_over_interpretation true)
+)
+
+(session_continuity
+
+  (anchor_snapshot_required_when
+    context_window_above_70_percent
+    model_switch
+    unexpected_failures
+    emotional_signal_detected
+    freeze_line_violation
+    git_confusion
+    multi_module_touch_detected
+  )
+
+  (anchor_rules
+    read_only true
+    no_interpretation true
+    no_file_modification true
+    raw_structured_output_only true
+  )
+
+  (handover_document_required true)
+  (handover_timestamp_required true)
+  (handover_must_include
+    phase
+    freeze_line
+    pytest_status
+    git_state
+    module_surface
+    next_mechanical_move
+  )
+)
+
+(freeze_line
+
+  (default_behavior_reference "last_all_green_commit_or_known_state")
+
+  (allowed_changes
+    structural_extraction
+    function_relocation
+    mechanical_cleanup
+    logging_isolation
+    orchestration_simplification
+  )
+
+  (prohibited_changes
+    semantic_logic_changes
+    test_behavior_changes
+    public_contract_shape_changes
+    planner_behavior_changes
+    ledger_schema_changes
+  )
+)
+
+(refactor_protocol
+
+  (strategy "fix_forward")
+
+  (constraints
+    extract_only
+    keep_public_api_identical
+    keep_return_shapes_identical
+    keep_error_semantics_identical
+    no_cross_module_rewrites
+    max_module_size_target 200
+    single_entry_single_exit_preferred
+  )
+
+  (verification
+    (command "python -m pytest tests/ -v")
+    (expected_behavior_change "none")
+  )
+)
+
+(diff_protocol
+
+  (output_mode "unified_diff_only")
+
+  (rules
+    no_explanations
+    no_markdown_fences
+    no_partial_patches
+    no_unrelated_edits
+    preserve_whitespace_semantics
+  )
+
+  (failure_behavior
+    (if_cannot_comply "REFUSE")
+  )
+)
+
+(git_policy
+
+  (writes_are_mechanical_file_writes true)
+  (git_used_for_archival_only true)
+  (no_git_restore_during_execution true)
+  (assert_clean_before_commit true)
+  (commit_only_on_success true)
+)
+
+(test_execution_policy
+
+  (no_shell_true_by_default true)
+  (preserve_quoting true)
+  (timeout_explicit true)
+  (no_hidden_test_modification true)
+)
+
+(model_switch_policy
+
+  (always_provide_anchor_snapshot true)
+  (always_provide_freeze_line true)
+  (always_provide_next_mechanical_move true)
+  (never_assume_previous_context true)
+)
+
+(emotional_signal_policy
+
+  (signal_words
+    "wtf"
+    "this is getting complex"
+    "this smells"
+    "overwhelming"
+    "spaghetti"
+  )
+
+  (response
+    immediate_scope_reduction
+    reaffirm_freeze_line
+    extract_single_micro_step
+  )
+)
+
+(stop_condition
+  "Continue only with next_mechanical_move. Do not expand scope."
+)

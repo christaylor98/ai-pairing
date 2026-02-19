@@ -1,0 +1,108 @@
+(identity
+  (artifact "session_close")
+  (version "1.0")
+  (purpose "deterministic multi-session continuity")
+)
+
+(session_metadata
+  (project "Axis Workflow / AI Factory")
+  (phase "BoundedRepair Decomposition – Phase 1 Stabilization")
+  (timestamp "20260219_1705")
+  (operator "Chris")
+)
+
+(architectural_context
+  (objective "Fix-forward refactor: decompose core/bounded_repair.py into small single-concern modules with zero behavior change")
+  (current_focus "Stabilizing extracted GitArchiver and TestExecutor after decomposition")
+  (strategy "refactor")
+)
+
+(freeze_line
+  (behavior_reference "Pre-decomposition behavior where all 357 tests passed before GitArchiver/TestExecutor extraction adjustments")
+  (allowed_changes
+    "GitArchiver repo-root scoping fix"
+    "TestExecutor command execution semantics correction"
+  )
+  (prohibited_changes
+    semantic_logic
+    test_behavior
+    result_shape_changes
+    contract_changes
+    planner_behavior_changes
+  )
+)
+
+(mechanical_snapshot
+
+  (pytest_status
+    (summary "failing")
+    (command "python -m pytest tests/ -v")
+    (failing_tests
+      "tests/test_l4_5.py::test_parse_loose_response_recommend_all"
+      "tests/test_test_executor.py::test_run_simple_command"
+    )
+  )
+
+  (git_state
+    (working_directory "dirty")
+    (command_status "local development state; modifications in core/git_archiver.py and core/test_executor.py during stabilization")
+    (command_diff "recent refactor wiring and execution semantics changes")
+  )
+
+  (module_surface
+    (target_module "core/git_archiver.py + core/test_executor.py + core/bounded_repair.py (orchestrator)")
+    (line_count "bounded_repair.py ~ reduced from ~950 LOC; GitArchiver small; TestExecutor small")
+    (entry_points
+      "GitArchiver.assert_clean"
+      "GitArchiver.add_commit"
+      "GitArchiver.head_sha"
+      "TestExecutor.run"
+      "execute_bounded_repair"
+    )
+    (public_contracts
+      "AttemptResult"
+      "BoundedRepairResult"
+    )
+  )
+
+)
+
+(known_instabilities
+  (area "TestExecutor")
+  (description "Command execution semantics incorrect; current implementation fails to capture stdout for simple inline python command")
+)
+
+(known_instabilities
+  (area "L4_5 loose response parsing")
+  (description "High-risk items incorrectly auto-accepted when parsing 'recommend all'; expected behavior: do NOT auto-accept HIGH risk")
+)
+
+(refactor_progress
+  (original_loc "core/bounded_repair.py ~950")
+  (current_loc "core/bounded_repair.py materially reduced; disk, test, git concerns extracted")
+  (extracted_components
+    "core/file_transaction.py"
+    "core/test_executor.py"
+    "core/git_archiver.py"
+  )
+  (remaining_extraction_targets
+    "None for Phase 1; currently in stabilization before further decomposition")
+)
+
+(next_mechanical_move
+  (target "Fix TestExecutor.run to correctly execute quoted commands and capture stdout without altering behavior semantics")
+  (risk "low")
+  (expected_behavior_change "none")
+  (verification_command "python -m pytest tests/ -v")
+)
+
+(invariants_reaffirmed
+  (zero_behavior_change true)
+  (append_only_ledger true)
+  (no_hidden_state true)
+  (single_module_focus true)
+)
+
+(stop_condition
+  "Resume next session starting with next_mechanical_move only."
+)

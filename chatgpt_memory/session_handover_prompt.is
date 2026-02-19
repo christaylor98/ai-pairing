@@ -1,0 +1,97 @@
+(identity
+  (artifact "session_close")
+  (version "1.0")
+  (purpose "deterministic multi-session continuity")
+)
+
+(session_metadata
+  (project "<project_name>")
+  (phase "<current_phase_name>")
+  (timestamp "<YYYYMMDD_HHMM>")
+  (operator "<human_or_agent_id>")
+)
+
+(architectural_context
+  (objective "<high_level_objective>")
+  (current_focus "<module_or_surface_under_work>")
+  (strategy "<refactor|stabilize|expand|repair|design>")
+)
+
+(freeze_line
+  (behavior_reference "<tag_or_commit_or_description>")
+  (allowed_changes
+    "<allowed_change_type_1>"
+    "<allowed_change_type_2>"
+  )
+  (prohibited_changes
+    semantic_logic
+    test_behavior
+    result_shape_changes
+    contract_changes
+    planner_behavior_changes
+  )
+)
+
+(mechanical_snapshot
+
+  (pytest_status
+    (summary "<all_green|failing>")
+    (command "python -m pytest tests/ -v")
+    (failing_tests
+      "<test_name_if_any>"
+    )
+  )
+
+  (git_state
+    (working_directory "<clean|dirty>")
+    (command_status "git status")
+    (command_diff "git diff --stat")
+  )
+
+  (module_surface
+    (target_module "<module_name>")
+    (line_count "<integer>")
+    (entry_points
+      "<function_1>"
+    )
+    (public_contracts
+      "<class_or_dataclass_1>"
+      "<class_or_dataclass_2>"
+    )
+  )
+
+)
+
+(known_instabilities
+  (area "<component_name>")
+  (description "<brief factual description>")
+)
+
+(refactor_progress
+  (original_loc "<integer_if_known>")
+  (current_loc "<integer>")
+  (extracted_components
+    "<component_1>"
+  )
+  (remaining_extraction_targets
+    "<component_2>"
+  )
+)
+
+(next_mechanical_move
+  (target "<specific_micro_step>")
+  (risk "<low|medium|high>")
+  (expected_behavior_change "none")
+  (verification_command "python -m pytest tests/ -v")
+)
+
+(invariants_reaffirmed
+  (zero_behavior_change true)
+  (append_only_ledger true)
+  (no_hidden_state true)
+  (single_module_focus true)
+)
+
+(stop_condition
+  "Resume next session starting with next_mechanical_move only."
+)
